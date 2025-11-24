@@ -12,16 +12,30 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OwnVehiclesDTO {
+public class ExVehiclesDTO {
+
 
     private Long id;
+
     private String regNumber;
-    private String type;
-    private BigDecimal capacity;
-    private BigDecimal currentMileage;
-    private String status; // Available, Busy, Maintenance
-    private Long assignedDriverId; // Nullable - driver can be unassigned
-    private Boolean isDelete;
+
+    private String ownerName;
+
+    private String ownerContact;
+
+    private BigDecimal hireRate;
+
+    private BigDecimal vehicleUsage; // Can be distance (km) or days
+
+    private BigDecimal advance;
+
+    private BigDecimal balance;
+
+    private BigDecimal totalCost;
+
+    private Integer paymentStatus;
+
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 }
