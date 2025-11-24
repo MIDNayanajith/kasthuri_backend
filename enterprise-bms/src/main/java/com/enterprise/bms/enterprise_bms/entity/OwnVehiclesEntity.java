@@ -22,36 +22,42 @@ public class OwnVehiclesEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;   // PK
+    private Long id;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(name = "reg_number", nullable = false, unique = true)
     private String regNumber;
 
-    @Column(length = 50)
-    private String type;   // e.g., "Container"
+    private String type;
 
-    @Column(precision = 5, scale = 2)
-    private BigDecimal capacity;   // e.g., 20.00 tons
+    private BigDecimal capacity;
 
-    @Column(precision = 10, scale = 2)
+    @Column(name = "current_mileage")
     private BigDecimal currentMileage = BigDecimal.ZERO;
 
-    @Column(length = 100)
-    private String status = "Available";
-    // ('Available', 'Busy', 'Maintenance')
+    private String status = "Available"; // Available, Busy, Maintenance
 
-    // FK: assigned_driver_id
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_driver_id")
     private DriversEntity assignedDriver;
 
+    @Column(name = "is_delete")
     private Boolean isDelete = false;
 
-    @Column(updatable = false)
-    @CreationTimestamp
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
 

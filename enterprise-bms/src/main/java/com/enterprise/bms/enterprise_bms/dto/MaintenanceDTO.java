@@ -6,21 +6,23 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class OwnVehiclesDTO {
+public class MaintenanceDTO {
 
     private Long id;
-    private String regNumber;
-    private String type;
-    private BigDecimal capacity;
-    private BigDecimal currentMileage;
-    private String status; // Available, Busy, Maintenance
-    private Long assignedDriverId; // Nullable - driver can be unassigned
+    private Long vehicleId;   // Reference to OwnVehiclesEntity (ID only)
+    private LocalDate date;
+    private String description;
+    private BigDecimal mileage;
+    private Integer quantity;
+    private BigDecimal unitPrice;
+    private BigDecimal totalPrice;
     private Boolean isDelete;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
