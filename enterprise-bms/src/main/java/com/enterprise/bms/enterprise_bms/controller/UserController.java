@@ -6,24 +6,29 @@ import com.enterprise.bms.enterprise_bms.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+
+
+import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping
 public class UserController {
-
     private final UserService userService;
 
+
+
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO){
+    public ResponseEntity<UserDTO> registerUser(@RequestBody UserDTO userDTO) {
         UserDTO registeredUser = userService.registerUser(userDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
     }
+
+
 
     @PostMapping("/login")
     public ResponseEntity<Map<String,Object>> login(@RequestBody AuthDTO authDto){
@@ -43,4 +48,22 @@ public class UserController {
         }
     }
 
+    @GetMapping("/users")
+    public ResponseEntity<List<UserDTO>> getAllUsers() {
+        List<UserDTO> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
+    }
+    @PutMapping("/users/{id}")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Long id, @RequestBody UserDTO userDTO) {
+        userDTO.setId(id);
+        UserDTO updatedUser = userService.updateUser(userDTO);
+        return ResponseEntity.ok(updatedUser);
+    }
+
+
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        return ResponseEntity.ok().build();
+    }
 }
