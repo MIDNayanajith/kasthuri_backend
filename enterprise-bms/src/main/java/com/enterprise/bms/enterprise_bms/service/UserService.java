@@ -14,7 +14,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +34,38 @@ public class UserService {
         return  toDTO(newUser);
     }
 
+    // Add to UserService.java
+
+    public List<UserDTO> getAllUsers() {
+        List<UserEntity> users = userRepository.findAll();
+        return users.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+
+    public UserDTO updateUser(UserDTO userDTO) {
+        UserEntity existingUser = userRepository.findById(userDTO.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        // Update fields
+        existingUser.setUsername(userDTO.getUsername());
+        existingUser.setEmail(userDTO.getEmail());
+        existingUser.setRole(userDTO.getRole().toUpperCase());
+        existingUser.setMobileNo(userDTO.getMobileNo());
+        existingUser.setProfileImg(userDTO.getProfileImg());
+        existingUser.setIsActive(userDTO.getIsActive());
+        existingUser.setUpdatedAt(LocalDateTime.now());
+        // Only update password if provided
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        }
+        UserEntity updatedUser = userRepository.save(existingUser);
+        return toDTO(updatedUser);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found");
+        }
+        userRepository.deleteById(id);
+    }
     //HELPER METHODS
 
     public UserEntity toEntity(UserDTO userDTO){
@@ -38,7 +73,7 @@ public class UserService {
                 .id(userDTO.getId())
                 .username(userDTO.getUsername())
                 .password(passwordEncoder.encode(userDTO.getPassword()))
-                .role(userDTO.getRole())
+                .role(userDTO.getRole().toUpperCase())
                 .email(userDTO.getEmail())
                 .mobileNo(userDTO.getMobileNo())
                 .profileImg(userDTO.getProfileImg())
