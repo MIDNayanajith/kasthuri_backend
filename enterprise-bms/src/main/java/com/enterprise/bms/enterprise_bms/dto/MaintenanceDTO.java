@@ -17,6 +17,7 @@ public class MaintenanceDTO {
 
     private Long id;
     private Long vehicleId;   // Reference to OwnVehiclesEntity (ID only)
+    private String vehicleRegNumber;
     private LocalDate date;
     private String description;
     private BigDecimal mileage;
