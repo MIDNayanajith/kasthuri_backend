@@ -1,6 +1,7 @@
-// New ExcelController.java
+// Updated ExcelController.java
 package com.enterprise.bms.enterprise_bms.controller;
 import com.enterprise.bms.enterprise_bms.service.MaintenanceService;
+import com.enterprise.bms.enterprise_bms.service.TransportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -17,6 +18,7 @@ import java.io.ByteArrayInputStream;
 @RequestMapping("/excel")
 public class ExcelController {
     private final MaintenanceService maintenanceService;
+    private final TransportService transportService;
     @GetMapping("/download/maintenance")
     public ResponseEntity<Resource> downloadMaintenanceExcel(
             @RequestParam(required = false) Long vehicleId,
@@ -31,6 +33,22 @@ public class ExcelController {
         } catch (Exception e) {
             // In a production environment, log the error appropriately
             throw new RuntimeException("Error generating maintenance Excel report", e);
+        }
+    }
+    @GetMapping("/download/transport")
+    public ResponseEntity<Resource> downloadTransportExcel(
+            @RequestParam(required = false) Long vehicleId,
+            @RequestParam(required = false) String month) {
+        try {
+            ByteArrayInputStream inputStream = transportService.generateTransportExcelReport(vehicleId, month);
+            InputStreamResource resource = new InputStreamResource(inputStream);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=transport_details.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(resource);
+        } catch (Exception e) {
+            // In a production environment, log the error appropriately
+            throw new RuntimeException("Error generating transport Excel report", e);
         }
     }
 }
