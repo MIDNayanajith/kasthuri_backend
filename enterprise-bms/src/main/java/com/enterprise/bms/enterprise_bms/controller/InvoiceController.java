@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,12 @@ import java.util.List;
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
+
+    // Get all invoices
+    @GetMapping
+    public ResponseEntity<List<InvoiceDTO>> getAllInvoices() {
+        return ResponseEntity.ok(invoiceService.getAllInvoices());
+    }
 
     // Create invoice (body: { "transportIds": [1,2], "createdByUserId": 1 })
     @PostMapping
@@ -41,6 +48,20 @@ public class InvoiceController {
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=invoice_" + id + ".pdf")
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(resource);
+    }
+
+    // New: Update invoice status
+    @PutMapping("/{id}")
+    public ResponseEntity<InvoiceDTO> updateInvoiceStatus(@PathVariable Long id, @RequestBody CreateInvoiceRequest.UpdateInvoiceRequest request) {
+        InvoiceDTO updated = invoiceService.updateInvoiceStatus(id, request.getStatus());
+        return ResponseEntity.ok(updated);
+    }
+
+    // New: Soft delete invoice
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
+        invoiceService.deleteInvoice(id);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
 
@@ -64,5 +85,19 @@ class CreateInvoiceRequest {
 
     public void setCreatedByUserId(Long createdByUserId) {
         this.createdByUserId = createdByUserId;
+    }
+
+    // New helper request class for update
+    class UpdateInvoiceRequest {
+        private String status;
+
+        // Getters and setters
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
     }
 }
