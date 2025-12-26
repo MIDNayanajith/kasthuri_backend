@@ -115,20 +115,6 @@ public class AttendanceService {
         }
     }
 
-    private AttendanceEntity toEntity(AttendanceDTO dto) {
-        return AttendanceEntity.builder()
-                .recipientType(dto.getRecipientType())
-                .recipientId(dto.getRecipientId())
-                .attendanceDate(dto.getAttendanceDate())
-                .status(dto.getStatus())
-                .checkInTime(dto.getCheckInTime())
-                .checkOutTime(dto.getCheckOutTime())
-                .notes(dto.getNotes())
-                .createdBy(dto.getCreatedBy())
-                .isDelete(false)
-                .build();
-    }
-
     private AttendanceDTO toDTO(AttendanceEntity entity) {
         return AttendanceDTO.builder()
                 .id(entity.getId())
@@ -144,6 +130,21 @@ public class AttendanceService {
                 .isDelete(entity.getIsDelete())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())
+                .build();
+    }
+
+    // And ensure the save and update methods handle null times properly:
+    private AttendanceEntity toEntity(AttendanceDTO dto) {
+        return AttendanceEntity.builder()
+                .recipientType(dto.getRecipientType())
+                .recipientId(dto.getRecipientId())
+                .attendanceDate(dto.getAttendanceDate())
+                .status(dto.getStatus())
+                .checkInTime(dto.getCheckInTime() != null ? dto.getCheckInTime() : null)
+                .checkOutTime(dto.getCheckOutTime() != null ? dto.getCheckOutTime() : null)
+                .notes(dto.getNotes())
+                .createdBy(dto.getCreatedBy())
+                .isDelete(false)
                 .build();
     }
 

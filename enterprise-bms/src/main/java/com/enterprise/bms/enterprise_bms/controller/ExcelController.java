@@ -1,5 +1,6 @@
 package com.enterprise.bms.enterprise_bms.controller;
 
+import com.enterprise.bms.enterprise_bms.service.AdvanceService;
 import com.enterprise.bms.enterprise_bms.service.AttendanceService;
 import com.enterprise.bms.enterprise_bms.service.MaintenanceService;
 import com.enterprise.bms.enterprise_bms.service.PaymentService;
@@ -25,6 +26,7 @@ public class ExcelController {
     private final TransportService transportService;
     private final AttendanceService attendanceService;
     private final PaymentService paymentService;
+    private final AdvanceService advanceService;
 
     @GetMapping("/download/maintenance")
     public ResponseEntity<Resource> downloadMaintenanceExcel(
@@ -89,6 +91,23 @@ public class ExcelController {
                     .body(resource);
         } catch (Exception e) {
             throw new RuntimeException("Error generating payments Excel report", e);
+        }
+    }
+
+    @GetMapping("/download/advances")
+    public ResponseEntity<Resource> downloadAdvancesExcel(
+            @RequestParam(required = false) String recipientType,
+            @RequestParam(required = false) Long recipientId,
+            @RequestParam(required = false) String month) {
+        try {
+            ByteArrayInputStream inputStream = advanceService.generateAdvancesExcelReport(recipientType, recipientId, month);
+            InputStreamResource resource = new InputStreamResource(inputStream);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=advances_details.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(resource);
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating advances Excel report", e);
         }
     }
 }
