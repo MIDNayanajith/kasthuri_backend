@@ -88,6 +88,15 @@ public class AdvanceService {
         }
     }
 
+    public void unmarkAdvancesForPayment(Long paymentId) {
+        List<AdvanceEntity> deducted = advanceRepository.findByDeductedInPaymentId(paymentId);
+        for (AdvanceEntity adv : deducted) {
+            adv.setStatus("Pending");
+            adv.setDeductedInPaymentId(null);
+            advanceRepository.save(adv);
+        }
+    }
+
     private void validateAdvanceDTO(AdvanceDTO dto) {
         if (dto.getRecipientType() == null || (!dto.getRecipientType().equals("Driver") && !dto.getRecipientType().equals("User"))) {
             throw new RuntimeException("Invalid recipient type! Must be 'Driver' or 'User'");

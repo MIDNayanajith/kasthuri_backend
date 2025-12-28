@@ -1,11 +1,11 @@
 package com.enterprise.bms.enterprise_bms.repository;
 
 import com.enterprise.bms.enterprise_bms.entity.ExVehiclesEntity;
-import com.enterprise.bms.enterprise_bms.entity.OwnVehiclesEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,5 +19,11 @@ public interface ExVehiclesRepository extends JpaRepository<ExVehiclesEntity,Lon
 
     boolean existsByRegNumber(String regNumber);
 
-
+    @Query("SELECT e FROM ExVehiclesEntity e WHERE e.isDelete = false " +
+            "AND (:regNumber IS NULL OR LOWER(e.regNumber) LIKE LOWER(CONCAT('%', :regNumber, '%'))) " +
+            "AND (:startDate IS NULL OR e.date >= :startDate) " +
+            "AND (:endDate IS NULL OR e.date <= :endDate)")
+    List<ExVehiclesEntity> findFiltered(@Param("regNumber") String regNumber,
+                                        @Param("startDate") LocalDate startDate,
+                                        @Param("endDate") LocalDate endDate);
 }
