@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,19 +35,31 @@ public class ExVehiclesEntity {
     private BigDecimal hireRate;
 
     @Column(name = "vehicle_usage", precision = 10, scale = 2)
-    private BigDecimal vehicleUsage = BigDecimal.ZERO; // Distance in km or number of days
+    private BigDecimal vehicleUsage;
 
-    @Column( precision = 12, scale = 2)
-    private BigDecimal advance = BigDecimal.ZERO;
+    // Initial advance payment
+    @Column(name = "advance_paid", precision = 12, scale = 2)
+    private BigDecimal advancePaid = BigDecimal.ZERO;
 
+    // Total amount paid so far (cumulative)
+    @Column(name = "total_paid", precision = 12, scale = 2)
+    private BigDecimal totalPaid = BigDecimal.ZERO;
+
+    // Remaining balance to pay
     @Column(precision = 12, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
 
-    @Column(name = "total_cost", precision = 12, scale = 2)
-    private BigDecimal totalCost = BigDecimal.ZERO;
-
+    /**
+     * Payment Status:
+     * 1 = Pending (no payment)
+     * 2 = Advance Paid (partial payment)
+     * 3 = Fully Paid (full payment received)
+     */
     @Column(name = "payment_status", nullable = false)
-    private Integer paymentStatus = 1; // 1=Pending, 2=Advance Paid, 3=Fully Paid
+    private Integer paymentStatus = 1;
+
+    @Column(name = "vehicle_date", nullable = false)
+    private LocalDate date;
 
     @Column(name = "is_delete")
     private Boolean isDelete = false;
@@ -61,11 +74,44 @@ public class ExVehiclesEntity {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        // Initialize totalPaid with advancePaid
+        if (advancePaid != null) {
+            totalPaid = advancePaid;
+            balance = hireRate.subtract(advancePaid);
+        } else {
+            balance = hireRate;
+        }
+        updatePaymentStatus();
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        updatePaymentStatus();
+    }
+
+    private void updatePaymentStatus() {
+        if (totalPaid == null) {
+            paymentStatus = 1; // Pending
+            balance = hireRate;
+        } else if (totalPaid.compareTo(BigDecimal.ZERO) == 0) {
+            paymentStatus = 1; // Pending
+            balance = hireRate;
+        } else if (totalPaid.compareTo(hireRate) >= 0) {
+            paymentStatus = 3; // Fully Paid
+            balance = BigDecimal.ZERO;
+        } else if (totalPaid.compareTo(BigDecimal.ZERO) > 0) {
+            paymentStatus = 2; // Advance/Partial Paid
+            balance = hireRate.subtract(totalPaid);
+        }
+    }
+
+    // Helper method to add a payment
+    public void addPayment(BigDecimal amount) {
+        if (totalPaid == null) {
+            totalPaid = BigDecimal.ZERO;
+        }
+        totalPaid = totalPaid.add(amount);
+        updatePaymentStatus();
     }
 }
-

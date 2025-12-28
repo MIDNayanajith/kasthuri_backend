@@ -1,4 +1,4 @@
-// Updated TransportRepository.java (no major changes needed, but add if you want query for uninvoiced)
+// Updated TransportRepository.java - Add invoiceStatus parameter
 package com.enterprise.bms.enterprise_bms.repository;
 import com.enterprise.bms.enterprise_bms.entity.TransportEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,11 +20,15 @@ public interface TransportRepository extends JpaRepository<TransportEntity, Long
             "AND (:externalVehicleId IS NULL OR t.externalVehicle.id = :externalVehicleId) " +
             "AND (:startDate IS NULL OR t.loadingDate >= :startDate) " +
             "AND (:endDate IS NULL OR t.loadingDate <= :endDate) " +
+            "AND (:invoiceStatus IS NULL OR " +
+            " (:invoiceStatus = 'Not Invoiced' AND (t.invoiceStatus IS NULL OR t.invoiceStatus = 'Not Invoiced')) OR " +
+            " (:invoiceStatus = 'Invoiced' AND t.invoiceStatus IN ('Invoiced', 'Paid'))) " +
             "ORDER BY t.loadingDate DESC, t.createdAt DESC")
     List<TransportEntity> findFiltered(
             @Param("ownVehicleId") Long ownVehicleId,
             @Param("externalVehicleId") Long externalVehicleId,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("endDate") LocalDate endDate,
+            @Param("invoiceStatus") String invoiceStatus
     );
 }

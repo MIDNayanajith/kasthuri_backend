@@ -1,4 +1,4 @@
-// Updated TransportService.java
+// Updated TransportService.java - Add invoiceStatus parameter
 package com.enterprise.bms.enterprise_bms.service;
 import com.enterprise.bms.enterprise_bms.dto.TransportDTO;
 import com.enterprise.bms.enterprise_bms.entity.DriversEntity;
@@ -28,8 +28,8 @@ public class TransportService {
     private final OwnVehiclesRepository ownVehiclesRepository;
     private final ExVehiclesRepository exVehiclesRepository;
     private final DriversRepository driversRepository;
-    // Filtered records
-    public List<TransportDTO> getFilteredTransports(Long ownVehicleId, Long externalVehicleId, String month) {
+    // Filtered records - Add invoiceStatus parameter
+    public List<TransportDTO> getFilteredTransports(Long ownVehicleId, Long externalVehicleId, String month, String invoiceStatus) {
         LocalDate startDate = null;
         LocalDate endDate = null;
         if (month != null && !month.isEmpty()) {
@@ -40,9 +40,14 @@ public class TransportService {
                 throw new RuntimeException("Invalid month format. Use YYYY-MM");
             }
         }
-        List<TransportEntity> entities = transportRepository.findFiltered(ownVehicleId, externalVehicleId, startDate, endDate);
+        // Pass invoiceStatus to repository
+        List<TransportEntity> entities = transportRepository.findFiltered(
+                ownVehicleId, externalVehicleId, startDate, endDate, invoiceStatus
+        );
         return entities.stream().map(this::toDTO).collect(Collectors.toList());
     }
+    // ... [KEEP ALL OTHER METHODS EXACTLY AS THEY ARE, NO CHANGES NEEDED BELOW]
+    // The rest of your methods remain exactly the same
     // CREATE - Save new transport with auto-calculation
     public TransportDTO saveTransport(TransportDTO dto) {
         validateTransportDTO(dto);
@@ -54,7 +59,7 @@ public class TransportService {
     }
     // READ - Get all active transports
     public List<TransportDTO> getAllTransports() {
-        return getFilteredTransports(null, null, null);
+        return getFilteredTransports(null, null, null, null);
     }
     // READ - Get transport by ID
     public TransportDTO getTransportById(Long id) {
@@ -202,6 +207,7 @@ public class TransportService {
                 .advanceReceived(dto.getAdvanceReceived() != null ? dto.getAdvanceReceived() : BigDecimal.ZERO)
                 .balanceReceived(dto.getBalanceReceived() != null ? dto.getBalanceReceived() : BigDecimal.ZERO)
                 .tripStatus(dto.getTripStatus() != null ? dto.getTripStatus() : 1)
+                .invoiceStatus("Not Invoiced") // Set default to "Not Invoiced"
                 .isDeleted(false);
         // Set relationships if IDs are provided
         if (dto.getOwnVehicleId() != null) {
@@ -249,7 +255,7 @@ public class TransportService {
     }
     // Generate Excel
     public ByteArrayInputStream generateTransportExcelReport(Long vehicleId, String month) {
-        List<TransportDTO> records = getFilteredTransports(null, null, month);
+        List<TransportDTO> records = getFilteredTransports(null, null, month, null);
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Transport Records");
             // Create header row

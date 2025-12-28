@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface AdvanceRepository extends JpaRepository<AdvanceEntity, Long> {
-
     @Query("SELECT a FROM AdvanceEntity a WHERE a.isDelete = false")
     List<AdvanceEntity> findAllByIsDeleteFalse();
 
@@ -42,4 +41,7 @@ public interface AdvanceRepository extends JpaRepository<AdvanceEntity, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    @Query("SELECT a FROM AdvanceEntity a WHERE a.deductedInPaymentId = :paymentId AND a.isDelete = false")
+    List<AdvanceEntity> findByDeductedInPaymentId(@Param("paymentId") Long paymentId);
 }

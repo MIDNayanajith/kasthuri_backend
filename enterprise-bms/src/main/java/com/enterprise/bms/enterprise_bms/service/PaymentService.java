@@ -1,4 +1,5 @@
 package com.enterprise.bms.enterprise_bms.service;
+
 import com.enterprise.bms.enterprise_bms.dto.PaymentsDTO;
 import com.enterprise.bms.enterprise_bms.entity.PaymentsEntity;
 import com.enterprise.bms.enterprise_bms.repository.PaymentsRepository;
@@ -6,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,11 +16,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
     private final PaymentsRepository paymentsRepository;
     private final AdvanceService advanceService;
+
     public PaymentsDTO savePayment(PaymentsDTO dto) {
         validatePaymentsDTO(dto);
         if (paymentsRepository.existsByRecipientTypeAndRecipientIdAndPeriodMonthAndPeriodYear(
@@ -35,30 +39,30 @@ public class PaymentService {
                 entity.getPeriodMonth(), entity.getPeriodYear());
         return toDTO(entity);
     }
+
     public PaymentsDTO updatePayment(Long id, PaymentsDTO dto) {
         PaymentsEntity existing = paymentsRepository.findByIdAndIsDeleteFalse(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found with ID: " + id));
         updateFields(existing, dto);
-        BigDecimal pendingAdvances = advanceService.getTotalPendingAdvances(
-                existing.getRecipientType(), existing.getRecipientId(), existing.getPeriodMonth(), existing.getPeriodYear());
-        existing.setAdvancesDeducted(pendingAdvances);
         calculateNetPay(existing);
         existing = paymentsRepository.save(existing);
-        advanceService.markAdvancesAsDeducted(existing.getId(), existing.getRecipientType(), existing.getRecipientId(),
-                existing.getPeriodMonth(), existing.getPeriodYear());
         return toDTO(existing);
     }
+
     public void deletePayment(Long id) {
         PaymentsEntity entity = paymentsRepository.findByIdAndIsDeleteFalse(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found with ID: " + id));
+        advanceService.unmarkAdvancesForPayment(id);
         entity.setIsDelete(true);
         paymentsRepository.save(entity);
     }
+
     public PaymentsDTO getPaymentById(Long id) {
         PaymentsEntity entity = paymentsRepository.findByIdAndIsDeleteFalse(id)
                 .orElseThrow(() -> new RuntimeException("Payment not found with ID: " + id));
         return toDTO(entity);
     }
+
     public List<PaymentsDTO> getFilteredPayments(String recipientType, Long recipientId, String month) {
         Integer periodMonth = null;
         Integer periodYear = null;
@@ -74,6 +78,7 @@ public class PaymentService {
         List<PaymentsEntity> entities = paymentsRepository.findFiltered(recipientType, recipientId, periodMonth, periodYear);
         return entities.stream().map(this::toDTO).collect(Collectors.toList());
     }
+
     private void validatePaymentsDTO(PaymentsDTO dto) {
         if (dto.getRecipientType() == null || (!dto.getRecipientType().equals("Driver") && !dto.getRecipientType().equals("User"))) {
             throw new RuntimeException("Invalid recipient type! Must be 'Driver' or 'User'");
@@ -91,6 +96,7 @@ public class PaymentService {
             throw new RuntimeException("Status is required!");
         }
     }
+
     private void updateFields(PaymentsEntity existing, PaymentsDTO dto) {
         if (dto.getRecipientType() != null) existing.setRecipientType(dto.getRecipientType());
         if (dto.getRecipientId() != null) existing.setRecipientId(dto.getRecipientId());
@@ -104,12 +110,14 @@ public class PaymentService {
         if (dto.getNotes() != null) existing.setNotes(dto.getNotes());
         if (dto.getCreatedBy() != null) existing.setCreatedBy(dto.getCreatedBy());
     }
+
     private void calculateNetPay(PaymentsEntity entity) {
         BigDecimal net = entity.getBaseAmount()
                 .subtract(entity.getDeductions() != null ? entity.getDeductions() : BigDecimal.ZERO)
                 .subtract(entity.getAdvancesDeducted() != null ? entity.getAdvancesDeducted() : BigDecimal.ZERO);
         entity.setNetPay(net);
     }
+
     private PaymentsEntity toEntity(PaymentsDTO dto) {
         return PaymentsEntity.builder()
                 .recipientType(dto.getRecipientType())
@@ -126,6 +134,7 @@ public class PaymentService {
                 .isDelete(false)
                 .build();
     }
+
     private PaymentsDTO toDTO(PaymentsEntity entity) {
         return PaymentsDTO.builder()
                 .id(entity.getId())
@@ -146,6 +155,7 @@ public class PaymentService {
                 .updatedAt(entity.getUpdatedAt())
                 .build();
     }
+
     public ByteArrayInputStream generatePaymentsExcelReport(String recipientType, Long recipientId, String month) {
         List<PaymentsDTO> records = getFilteredPayments(recipientType, recipientId, month);
         try (Workbook workbook = new XSSFWorkbook()) {
