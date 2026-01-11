@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -26,4 +27,8 @@ public interface ExVehiclesRepository extends JpaRepository<ExVehiclesEntity,Lon
     List<ExVehiclesEntity> findFiltered(@Param("regNumber") String regNumber,
                                         @Param("startDate") LocalDate startDate,
                                         @Param("endDate") LocalDate endDate);
+
+    //for dashboard
+    @Query("SELECT COALESCE(SUM(e.hireRate), 0) FROM ExVehiclesEntity e WHERE e.isDelete = false AND e.date >= :start AND e.date <= :end")
+    BigDecimal getTotalHireCostForPeriod(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

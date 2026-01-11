@@ -239,4 +239,9 @@ public class ExVehicleService {
             throw new RuntimeException("Error generating Excel report", e);
         }
     }
+
+    //for dashboard
+    public BigDecimal getTotalHireCostForPeriod(LocalDate start, LocalDate end) {
+        return exVehiclesRepository.getTotalHireCostForPeriod(start, end);
+    }
 }

@@ -292,4 +292,9 @@ public class FuelService {
                 .tripDescription(entity.getTransport() != null ? entity.getTransport().getDescription() : null)
                 .build();
     }
+
+    //for dashboard
+    public BigDecimal getTotalFuelCostForPeriod(LocalDate start, LocalDate end) {
+        return fuelRepository.getTotalFuelCostForPeriod(start, end);
+    }
 }

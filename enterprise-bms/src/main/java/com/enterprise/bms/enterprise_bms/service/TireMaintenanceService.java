@@ -220,4 +220,9 @@ public class TireMaintenanceService {
                 .updatedAt(e.getUpdatedAt())
                 .build();
     }
+
+    //for dashboard
+    public BigDecimal getTotalTireMaintenanceCostForPeriod(LocalDate start, LocalDate end) {
+        return tireMaintenanceRepository.getTotalTireMaintenanceCostForPeriod(start, end);
+    }
 }

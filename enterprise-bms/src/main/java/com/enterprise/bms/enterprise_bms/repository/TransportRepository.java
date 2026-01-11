@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -31,4 +32,7 @@ public interface TransportRepository extends JpaRepository<TransportEntity, Long
             @Param("endDate") LocalDate endDate,
             @Param("invoiceStatus") String invoiceStatus
     );
+    //for dashboard
+    @Query("SELECT COALESCE(SUM(t.agreedAmount), 0) FROM TransportEntity t WHERE t.isDeleted = false AND t.tripStatus = 2 AND t.loadingDate >= :start AND t.loadingDate <= :end")
+    BigDecimal getSumAgreedAmountCompleted(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }
