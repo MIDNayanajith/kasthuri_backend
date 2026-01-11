@@ -55,4 +55,7 @@ public interface FuelRepository extends JpaRepository<FuelEntity, Long> {
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+    //for dashboard
+    @Query("SELECT COALESCE(SUM(f.totalCost), 0) FROM FuelEntity f WHERE f.isDelete = false AND f.fuelDate >= :start AND f.fuelDate <= :end")
+    BigDecimal getTotalFuelCostForPeriod(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

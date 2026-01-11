@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,8 @@ public interface TireMaintenanceRepository extends JpaRepository<TireMaintenance
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    //for dashboard
+    @Query("SELECT COALESCE(SUM(t.totalPrice), 0) FROM TireMaintenanceEntity t WHERE t.isDelete = false AND t.date >= :start AND t.date <= :end")
+    BigDecimal getTotalTireMaintenanceCostForPeriod(@Param("start") LocalDate start, @Param("end") LocalDate end);
 }

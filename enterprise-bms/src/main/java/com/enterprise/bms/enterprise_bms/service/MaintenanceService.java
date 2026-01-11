@@ -178,4 +178,9 @@ public class MaintenanceService {
                 .updatedAt(e.getUpdatedAt())
                 .build();
     }
+
+    //for dashboard
+    public BigDecimal getTotalMaintenanceCostForPeriod(LocalDate start, LocalDate end) {
+        return maintenanceRepository.getTotalMaintenanceCostForPeriod(start, end);
+    }
 }

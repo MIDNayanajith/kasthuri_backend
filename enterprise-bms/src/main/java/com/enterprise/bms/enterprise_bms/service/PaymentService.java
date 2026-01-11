@@ -203,4 +203,9 @@ public class PaymentService {
             throw new RuntimeException("Error generating Excel report", e);
         }
     }
+
+    //for dashboard
+    public BigDecimal getTotalPaymentsForPeriod(int year, int month) {
+        return paymentsRepository.getTotalPaymentsForPeriod(year, month);
+    }
 }

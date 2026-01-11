@@ -309,4 +309,8 @@ public class TransportService {
             throw new RuntimeException("Error generating Excel report", e);
         }
     }
+    //for dashboard
+    public BigDecimal getTotalIncomeForPeriod(LocalDate start, LocalDate end) {
+        return transportRepository.getSumAgreedAmountCompleted(start, end);
+    }
 }

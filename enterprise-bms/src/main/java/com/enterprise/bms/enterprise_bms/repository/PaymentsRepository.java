@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,4 +31,8 @@ public interface PaymentsRepository extends JpaRepository<PaymentsEntity, Long> 
             @Param("periodMonth") Integer periodMonth,
             @Param("periodYear") Integer periodYear
     );
+
+    //for dashboard
+    @Query("SELECT COALESCE(SUM(p.baseAmount - COALESCE(p.deductions, 0)), 0) FROM PaymentsEntity p WHERE p.isDelete = false AND p.periodYear = :year AND p.periodMonth = :month")
+    BigDecimal getTotalPaymentsForPeriod(@Param("year") int year, @Param("month") int month);
 }
