@@ -5,8 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository <UserEntity,Long>{
-
-    //select * from tbl-users where email = ?
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByEmail(String email);
+
+    // New: For reset token lookup
+    Optional<UserEntity> findByPasswordResetToken(String token);
 }
