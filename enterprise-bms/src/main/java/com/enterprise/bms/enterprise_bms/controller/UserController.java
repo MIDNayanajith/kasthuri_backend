@@ -24,24 +24,22 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String,Object>> login(@RequestBody AuthDTO authDto){
-        try{
-            if(!userService.isAccountActive(authDto.getEmail())){
+    public ResponseEntity<Map<String, Object>> login(@RequestBody AuthDTO authDto) {
+        try {
+            if (!userService.isAccountActive(authDto.getEmail())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
-                        "message","Your Account is not active"
+                        "message", "Your Account is not active"
                 ));
             }
-            Map<String,Object> response = userService.authenticateAndGenerateToken(authDto);
+            Map<String, Object> response = userService.authenticateAndGenerateToken(authDto);
             return ResponseEntity.ok(response);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
-                    "message",e.getMessage()
+                    "message", e.getMessage()
             ));
         }
     }
 
-    // Add this endpoint to get current user info
     @GetMapping("/user-info")
     public ResponseEntity<UserDTO> getCurrentUserInfo() {
         UserDTO user = userService.getPublicProfile(null);
@@ -65,5 +63,20 @@ public class UserController {
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        userService.forgotPassword(email);
+        return ResponseEntity.ok(Map.of("message", "If an account exists with this email, a reset link has been sent."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody Map<String, String> request) {
+        String token = request.get("token");
+        String newPassword = request.get("newPassword");
+        userService.resetPassword(token, newPassword);
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 }
